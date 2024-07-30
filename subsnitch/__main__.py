@@ -4,10 +4,14 @@ __package_name__    = 'subsnitch'
 __code_desc__       = 'burning subtitles/covers on audio tracks to produce video files'
 __code_version__    = "v0.0.1"
 
-import os
+import os, sys
 import argparse
 import logging
 from pprint import pprint as pp
+
+class FileNotFoundError(Exception):
+    """Custom exception to be raised when the file is not found."""
+    pass
 
 def begin_logging():
     handler = logging.StreamHandler()
@@ -34,6 +38,32 @@ def handle_args():
     # collect parser if needed to conditionally call usage: parser.print_help()
     parser, args = collect_args()
     return args
+
+def explode(filename):
+    base_name, extension = os.path.splitext(filename)
+    return base_name, extension
+
+def find_vtt_file(directory, filename, extension):
+    """
+    Searches the specified directory for a .vtt file that matches the
+    filename or filename.ext.
+
+    Raises:
+        FileNotFoundError: If no matching .vtt file is found.
+    """
+    ## Sanity check. Prepend a dot to extension
+    extension = '.' + extension.lstrip('.')
+
+    vtt_filename = f"{filename}.vtt"
+    vtt_with_ext_filename = f"{filename}{extension}.vtt"
+    files_in_directory = os.listdir(directory)
+
+    if vtt_filename in files_in_directory:
+        return os.path.join(directory, vtt_filename)
+    elif vtt_with_ext_filename in files_in_directory:
+        return os.path.join(directory, vtt_with_ext_filename)
+    else:
+        raise FileNotFoundError(f"No matching .vtt file found for '{filename}' with extension '{extension}' in directory '{directory}'.")
 
 def main():
     log = begin_logging()
