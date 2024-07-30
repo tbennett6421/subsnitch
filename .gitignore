@@ -139,3 +139,12 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+### Project specifics
+.vtt
+.png
+.jpeg
+.jpg
+.mp3
+.mp4
+.wav
