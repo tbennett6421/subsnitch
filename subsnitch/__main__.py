@@ -43,7 +43,7 @@ def explode(filename):
     base_name, extension = os.path.splitext(filename)
     return base_name, extension
 
-def find_x_file(directory, filename, extension, needle):
+def find_x_file(directory, filename, extension, needle, raisable=True):
     """
     Searches the specified directory for an abritrary extension that matches the
     filename or filename.ext.
@@ -64,10 +64,34 @@ def find_x_file(directory, filename, extension, needle):
     elif needle_with_ext_filename in files_in_directory:
         return os.path.join(directory, needle_with_ext_filename)
     else:
-        raise FileNotFoundError(f"No matching .vtt file found for '{filename}' with extension '{extension}' in directory '{directory}'.")
+        if raisable:
+            raise FileNotFoundError(f"No matching .vtt file found for '{filename}' with extension '{extension}' in directory '{directory}'.")
+        else:
+            return None
 
 def find_vtt_file(directory, filename, extension):
     return find_x_file(directory, filename, extension, ".vtt")
+
+def find_image_file(directory, filename, extension):
+
+    # Search for images matching the targeted audio file
+    acceptable_extensions = ['.png', '.jpg', '.jpeg', '.webp']
+    for needle in acceptable_extensions:
+        rval = find_x_file(directory, filename, extension, needle, raisable=False)
+        if rval is not None:
+            return rval
+
+    # If not found, look for a fallback file named 'cover'
+    for ext in acceptable_extensions:
+        cover_filename = f'cover{ext}'
+        cover_path = os.path.join(directory, cover_filename)
+        # Check if the cover file exists
+        if os.path.isfile(cover_path):
+            return cover_path
+
+    # If neither is found, return None
+    # Images are optional
+    return None
 
 def main():
     log = begin_logging()
@@ -77,14 +101,18 @@ def main():
     current_directory = os.getcwd()
     for filename in os.listdir(current_directory):
         if filename.endswith('.wav') or filename.endswith('.mp3'):
+            # Audio Selection
             base_name, extension = explode(filename)
             print(f"[*] Audio:: Filename: {base_name}, Extension: {extension}")
+            # Subtitle Selection
             subtitles = find_vtt_file(current_directory, base_name, extension)
             base_name, extension = explode(subtitles)
             print(f"[*] VTT:: Filename: {base_name}, Extension: {extension}")
-
-            # Looking for a cover file
-
+            # Image Selection
+            imagefile = find_image_file(current_directory, base_name, extension)
+            if imagefile is not None:
+                base_name, extension = explode(imagefile)
+                print(f"[*] IMG:: Filename: {base_name}, Extension: {extension}")
 
             sys.exit(1)
             #targets.append(filename)
