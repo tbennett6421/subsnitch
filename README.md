@@ -17,11 +17,20 @@ Alternatively the program may take arguments to alter how it functions
 
 The following is the help for the program
 ```
+usage: __main__.py [-h] [-V] [-v]
+
+burning subtitles/covers on audio tracks to produce video files
+
+options:
+  -h, --help     show this help message and exit
+  -V, --version  show program's version number and exit
+  -v, --verbose
 ```
 
 # Examples
 
 ```sh
+No content
 ```
 
 # Credits
