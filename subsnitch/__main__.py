@@ -132,6 +132,22 @@ def create_subtitled_video(image=None, audio=None, vtt=None, output=None):
     print("[*] Video: %s" % output)
     print("[*] VideoFile: %s" % basefile)
 
+    # Load the audio/images
+    audio_clip = AudioFileClip(audio)
+    duration = audio_clip.duration
+    image_clip = ImageClip(image, duration=duration)
+
+    # Set the audio to the image clip
+    video_clip = image_clip.set_audio(audio_clip)
+
+    # Save the video without subtitles first
+    temp_video_path = "temp_video.mp4"
+    video_clip.write_videofile(temp_video_path, codec="libx264", fps=24)
+
+    # Use ffmpeg to add the subtitles
+    ffmpeg.input(temp_video_path).output(output, vf=f"subtitles={vtt}", format='mp4').run(overwrite_output=True)
+    os.remove(temp_video_path)
+
 def main():
     log = begin_logging()
     args = handle_args()
